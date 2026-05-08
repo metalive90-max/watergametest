@@ -4,16 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>30秒節水記憶挑戰</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script charset="utf-8" src="[https://static.line-scdn.net/liff/edge/2/sdk.js](https://static.line-scdn.net/liff/edge/2/sdk.js)"></script>
     
     <style>
+        /* 翻牌的 3D 透視與過渡動畫設定 */
         .perspective { perspective: 1000px; }
         .transform-style-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
         .transition-transform { transition: transform 0.5s ease-in-out; }
+        
+        /* 防止使用者選取文字影響遊戲體驗 */
         body { user-select: none; -webkit-user-select: none; }
+        
+        /* 隱藏捲軸保持版面乾淨 */
         ::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -22,9 +27,10 @@
     <div class="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden relative border-2 border-cyan-100">
         
         <div class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-4 text-center relative">
+            
             <div id="profile-container" class="absolute top-3 right-3 flex items-center gap-2 hidden bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
                 <span id="user-name" class="text-xs font-bold drop-shadow-md">載入中</span>
-                <img id="user-avatar" class="w-6 h-6 rounded-full border border-white object-cover" src="https://via.placeholder.com/150" alt="avatar" />
+                <img id="user-avatar" class="w-6 h-6 rounded-full border border-white object-cover" src="[https://via.placeholder.com/150](https://via.placeholder.com/150)" alt="avatar" />
             </div>
 
             <h1 class="text-2xl font-bold mb-2 mt-4 flex items-center justify-center gap-2">
@@ -36,7 +42,8 @@
             </div>
         </div>
 
-        <div id="game-board" class="grid grid-cols-3 md:grid-cols-4 gap-2 p-4 bg-cyan-900/5 min-h-[350px]"></div>
+        <div id="game-board" class="grid grid-cols-3 md:grid-cols-4 gap-2 p-4 bg-cyan-900/5 min-h-[350px]">
+            </div>
 
         <div id="overlay" class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-10">
             <div id="message-box" class="bg-white p-6 rounded-xl text-center max-w-[80%]">
@@ -52,34 +59,37 @@
     <div id="loading" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
         <p class="text-gray-500 font-bold mb-2">連接 LINE 帳號中...</p>
-        <p class="text-gray-400 text-sm">正在驗證每日挑戰次數</p>
     </div>
 
-    ```
-
----
-
-### 第二部分：請接續貼在第一部分後面，直到最後的 `</html>`
-
-```html
     <script>
+        // --- 變數設定 ---
         const LIFF_ID = "2009756203-gC2ejwHA"; 
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyKj4yt8ERMzAsQATvSmQtYruS9v4RzBa8xTA5lqiu_KknEUAcc8Zhe41dK_tMJJecfjw/exec"; 
+        const GAS_API_URL = "[https://script.google.com/macros/s/AKfycbyKj4yt8ERMzAsQATvSmQtYruS9v4RzBa8xTA5lqiu_KknEUAcc8Zhe41dK_tMJJecfjw/exec](https://script.google.com/macros/s/AKfycbyKj4yt8ERMzAsQATvSmQtYruS9v4RzBa8xTA5lqiu_KknEUAcc8Zhe41dK_tMJJecfjw/exec)"; 
 
         const GAME_TIME = 30;
         const MEMO_TIME = 10; 
         const TOTAL_PAIRS = 6; 
         const waterTips = [
-            { id: 1, icon: '🚰', text: '隨手關水' }, { id: 2, icon: '🚿', text: '淋浴速洗' },
-            { id: 3, icon: '🚽', text: '兩段沖水' }, { id: 4, icon: '👕', text: '集中洗衣' },
-            { id: 5, icon: '🌧️', text: '收集雨水' }, { id: 6, icon: '🪣', text: '水桶洗車' },
-            { id: 7, icon: '🌱', text: '洗米澆花' }, { id: 8, icon: '🔍', text: '定期查漏' }
+            { id: 1, icon: '🚰', text: '洗手水再利用' },
+            { id: 2, icon: '🚿', text: '淋浴代替泡澡' },
+            { id: 3, icon: '🚽', text: '冷水回收利用' },
+            { id: 4, icon: '👕', text: '兩段式沖水' },
+            { id: 5, icon: '🌧️', text: '洗米水再利用' },
+            { id: 6, icon: '🪣', text: '衣服集中清洗' },
+            { id: 7, icon: '🌱', text: '安裝節水裝置' },
+            { id: 8, icon: '🔍', text: '馬桶定期查漏' }
         ];
         
-        let cards = [], flippedCards = [], matchedPairs = 0;
-        let timer = null, timeLeft = GAME_TIME;
-        let isPlaying = false, isLockBoard = false, userProfile = null; 
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let timer = null;
+        let timeLeft = GAME_TIME;
+        let isPlaying = false;
+        let isLockBoard = false;
+        let userProfile = null; 
 
+        // --- DOM 元素 ---
         const board = document.getElementById('game-board');
         const statusText = document.getElementById('status-text');
         const timeDisplay = document.getElementById('time-display');
@@ -94,68 +104,60 @@
         const userNameElem = document.getElementById('user-name');
         const userAvatarElem = document.getElementById('user-avatar');
 
-        async function checkCanPlayToday(lineUserId) {
-            try {
-                const response = await fetch(`${GAS_API_URL}?action=check&userId=${lineUserId}`);
-                const data = await response.json();
-                return data.canPlay; 
-            } catch (e) {
-                console.error("檢查失敗", e);
-                return true; 
-            }
-        }
-
+        // --- API 互動 (僅記錄，不阻擋) ---
         async function recordPlayToday(lineUserId, profileName) {
             try {
                 const encodedName = encodeURIComponent(profileName);
-                await fetch(`${GAS_API_URL}?action=record&userId=${lineUserId}&displayName=${encodedName}`);
-            } catch (e) { console.error("記錄失敗", e); }
+                // 使用 fetch 呼叫 GAS，背景執行即可
+                fetch(`${GAS_API_URL}?action=record&userId=${lineUserId}&displayName=${encodedName}`).catch(e => console.error(e));
+            } catch (e) {
+                console.error("記錄遊玩次數失敗", e);
+            }
         }
 
+        // --- 初始化流程 ---
         async function initializeAppFlow() {
             try {
+                // 在電腦版預覽環境下
                 if (!window.navigator.userAgent.includes('Line')) {
                     loading.style.display = 'none';
                     overlayTitle.textContent = `嗨，訪客！`;
-                    overlayDesc.textContent = '網頁預覽模式，不限次數。';
-                    startBtn.textContent = '開始預覽';
+                    overlayDesc.textContent = '此為網頁預覽模式，不限次數暢玩！';
+                    startBtn.textContent = '開始遊戲';
                     startBtn.onclick = startGame;
                     return;
                 }
 
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); return; }
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login({ redirectUri: window.location.href });
+                    return;
+                }
 
                 userProfile = await liff.getProfile();
                 profileContainer.classList.remove('hidden');
                 userNameElem.textContent = userProfile.displayName;
-                userAvatarElem.src = userProfile.pictureUrl || 'https://via.placeholder.com/150';
+                userAvatarElem.src = userProfile.pictureUrl || '[https://via.placeholder.com/150](https://via.placeholder.com/150)';
 
-                const canPlay = await checkCanPlayToday(userProfile.userId);
+                // 取消了每日阻擋機制，直接讓玩家進入準備畫面
                 loading.style.display = 'none';
-
-                if (canPlay) {
-                    overlayTitle.textContent = `嗨，${userProfile.displayName}！`;
-                    overlayDesc.textContent = '每天只能挑戰一次喔！';
-                    startBtn.textContent = '開始遊戲';
-                    startBtn.onclick = startGame;
-                } else {
-                    overlayTitle.textContent = `明日再來！`;
-                    overlayTitle.className = 'text-xl font-bold text-cyan-800 mb-2';
-                    overlayDesc.textContent = `${userProfile.displayName}，今天已挑戰過了！`;
-                    startBtn.textContent = '關閉視窗';
-                    startBtn.onclick = () => liff.closeWindow();
-                }
+                overlayTitle.textContent = `嗨，${userProfile.displayName}！`;
+                overlayDesc.textContent = '準備好接受挑戰了嗎？找出所有節水小撇步！';
+                startBtn.textContent = '開始遊戲';
+                startBtn.onclick = startGame;
+                
             } catch (err) {
                 console.error("初始化失敗", err);
                 loading.style.display = 'none';
-                overlayTitle.textContent = `系統錯誤`;
-                overlayDesc.textContent = `無法連線。`;
-                startBtn.textContent = '重新整理';
-                startBtn.onclick = () => window.location.reload();
+                overlayTitle.textContent = `系統預覽模式`;
+                overlayDesc.textContent = `無法連線至 LINE，目前以純網頁模式執行。`;
+                startBtn.textContent = '開始遊戲';
+                startBtn.onclick = startGame;
             }
         }
 
+        // --- 遊戲核心邏輯 ---
         function createBoard() {
             board.innerHTML = '';
             const selectedTips = [...waterTips].sort(() => Math.random() - 0.5).slice(0, TOTAL_PAIRS);
@@ -175,29 +177,47 @@
 
                 const front = document.createElement('div');
                 front.className = 'w-full h-full absolute backface-hidden rotate-y-180 bg-white rounded-lg flex flex-col items-center justify-center shadow-inner border-2 border-cyan-200';
-                front.innerHTML = `<span class="text-2xl md:text-3xl mb-1">${tip.icon}</span><span class="text-[10px] md:text-xs font-bold text-cyan-800 text-center leading-tight px-1">${tip.text}</span>`;
+                front.innerHTML = `
+                    <span class="text-2xl md:text-3xl mb-1">${tip.icon}</span>
+                    <span class="text-[10px] md:text-xs font-bold text-cyan-800 text-center leading-tight px-1">${tip.text}</span>
+                `;
 
-                inner.appendChild(back); inner.appendChild(front); card.appendChild(inner);
+                inner.appendChild(back);
+                inner.appendChild(front);
+                card.appendChild(inner);
+
                 card.addEventListener('click', () => flipCard(card, inner));
                 board.appendChild(card);
             });
         }
 
         function flipCard(card, inner) {
-            if (!isPlaying || isLockBoard || flippedCards.includes(card) || card.classList.contains('matched')) return;
+            if (!isPlaying || isLockBoard) return;
+            if (flippedCards.includes(card) || card.classList.contains('matched')) return;
+
             inner.classList.add('rotate-y-180');
             flippedCards.push(card);
-            if (flippedCards.length === 2) checkMatch();
+
+            if (flippedCards.length === 2) {
+                checkMatch();
+            }
         }
 
         function checkMatch() {
             isLockBoard = true;
             const [card1, card2] = flippedCards;
-            if (card1.dataset.id === card2.dataset.id) {
-                card1.classList.add('matched'); card2.classList.add('matched');
-                matchedPairs++; scoreDisplay.textContent = matchedPairs;
+            const match = card1.dataset.id === card2.dataset.id;
+
+            if (match) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                scoreDisplay.textContent = matchedPairs;
                 resetFlipped();
-                if (matchedPairs === TOTAL_PAIRS) endGame(true);
+                
+                if (matchedPairs === TOTAL_PAIRS) {
+                    endGame(true);
+                }
             } else {
                 setTimeout(() => {
                     card1.querySelector('.card-inner').classList.remove('rotate-y-180');
@@ -207,25 +227,43 @@
             }
         }
 
-        function resetFlipped() { flippedCards = []; isLockBoard = false; }
+        function resetFlipped() {
+            flippedCards = [];
+            isLockBoard = false;
+        }
 
+        // --- 遊戲流程控制 ---
         function startGame() {
-            if(userProfile) recordPlayToday(userProfile.userId, userProfile.displayName);
-            matchedPairs = 0; scoreDisplay.textContent = matchedPairs;
+            // 背景記錄遊玩資料至 Google 試算表
+            if(userProfile) {
+                recordPlayToday(userProfile.userId, userProfile.displayName);
+            }
+
+            matchedPairs = 0;
+            scoreDisplay.textContent = matchedPairs;
             totalPairsDisplay.textContent = TOTAL_PAIRS;
             overlay.style.display = 'none';
-            isPlaying = false; isLockBoard = true; flippedCards = [];
+            isPlaying = false; 
+            isLockBoard = true; 
+            flippedCards = [];
+            
             createBoard();
 
             let memoTime = MEMO_TIME;
-            statusText.textContent = '記憶時間'; timeDisplay.textContent = memoTime; timeDisplay.className = 'font-bold text-cyan-300';
+            statusText.textContent = '記憶時間';
+            timeDisplay.textContent = memoTime;
+            timeDisplay.className = 'font-bold text-cyan-300';
 
             const allInners = document.querySelectorAll('.card-inner');
-            setTimeout(() => { allInners.forEach(inner => inner.classList.add('rotate-y-180')); }, 100);
+            setTimeout(() => {
+                allInners.forEach(inner => inner.classList.add('rotate-y-180'));
+            }, 100);
 
             clearInterval(timer);
             timer = setInterval(() => {
-                memoTime--; timeDisplay.textContent = memoTime;
+                memoTime--;
+                timeDisplay.textContent = memoTime;
+                
                 if (memoTime <= 0) {
                     clearInterval(timer);
                     allInners.forEach(inner => inner.classList.remove('rotate-y-180'));
@@ -235,52 +273,92 @@
         }
 
         function startActualGame() {
-            isPlaying = true; isLockBoard = false; timeLeft = GAME_TIME;
-            statusText.textContent = '剩餘時間'; timeDisplay.textContent = timeLeft; timeDisplay.className = 'font-bold text-yellow-300';
+            isPlaying = true;
+            isLockBoard = false;
+            timeLeft = GAME_TIME;
+            
+            statusText.textContent = '剩餘時間';
+            timeDisplay.textContent = timeLeft;
+            timeDisplay.className = 'font-bold text-yellow-300';
 
             timer = setInterval(() => {
-                timeLeft--; timeDisplay.textContent = timeLeft;
-                if (timeLeft <= 10) timeDisplay.classList.add('text-red-500', 'animate-pulse');
-                else timeDisplay.classList.remove('text-red-500', 'animate-pulse');
-                if (timeLeft <= 0) endGame(false);
+                timeLeft--;
+                timeDisplay.textContent = timeLeft;
+                
+                if (timeLeft <= 10) {
+                    timeDisplay.classList.add('text-red-500', 'animate-pulse');
+                } else {
+                    timeDisplay.classList.remove('text-red-500', 'animate-pulse');
+                }
+
+                if (timeLeft <= 0) {
+                    endGame(false);
+                }
             }, 1000);
         }
 
         function endGame(isWin) {
-            clearInterval(timer); isPlaying = false; overlay.style.display = 'flex';
-            statusText.textContent = '剩餘時間'; timeDisplay.className = 'font-bold text-yellow-300';
+            clearInterval(timer);
+            isPlaying = false;
+            overlay.style.display = 'flex';
+            
+            statusText.textContent = '剩餘時間';
+            timeDisplay.className = 'font-bold text-yellow-300';
             
             if (isWin) {
                 const usedTime = GAME_TIME - timeLeft;
-                overlayTitle.textContent = '🎉 挑戰成功！'; overlayTitle.className = 'text-xl font-bold text-green-600 mb-2';
+                overlayTitle.textContent = '🎉 挑戰成功！';
+                overlayTitle.className = 'text-xl font-bold text-green-600 mb-2';
                 overlayDesc.textContent = `太厲害了，你只花了 ${usedTime} 秒！`;
-                startBtn.textContent = '關閉視窗'; startBtn.onclick = () => sendResultToChat(true, usedTime);
+                startBtn.textContent = '關閉並分享成績';
+                startBtn.onclick = () => sendResultToChat(true, usedTime);
             } else {
-                overlayTitle.textContent = '😢 時間到！'; overlayTitle.className = 'text-xl font-bold text-red-600 mb-2';
-                overlayDesc.textContent = `每天只能挑戰一次，明天再來試試看吧！`;
-                startBtn.textContent = '關閉視窗'; startBtn.onclick = () => sendResultToChat(false, 0); 
+                overlayTitle.textContent = '😢 時間到！';
+                overlayTitle.className = 'text-xl font-bold text-red-600 mb-2';
+                overlayDesc.textContent = `還差一點點！多試幾次一定能過關！`;
+                // 失敗時改為「重新挑戰」，讓玩家可以直接再玩一次，優化體驗
+                startBtn.textContent = '重新挑戰';
+                startBtn.onclick = startGame; 
             }
         }
 
         function sendResultToChat(isWin, time) {
             if (typeof liff === 'undefined' || !liff.isInClient()) {
-                showMessage("預覽模式，不會傳送訊息。"); setTimeout(startGame, 3000); return;
+                showMessage("此為預覽模式，不會實際傳送訊息到 LINE。");
+                setTimeout(startGame, 3000);
+                return;
             }
-            const messageText = isWin ? `🎉 我在「節水記憶挑戰」花了 ${time} 秒過關！一天只有一次機會，你也來試試吧！💧` : `😢 今天的「節水記憶挑戰」失敗了，水資源流失中，明天再接再厲！💧`;
-            startBtn.textContent = '傳送中...'; startBtn.disabled = true;
 
-            liff.sendMessages([{ type: 'text', text: messageText }]).then(() => { liff.closeWindow(); })
-            .catch((err) => { console.error('失敗', err); startBtn.textContent = '關閉視窗'; startBtn.disabled = false; startBtn.onclick = () => liff.closeWindow(); });
+            const messageText = isWin 
+                ? `🎉 我在「節水記憶挑戰」花了 ${time} 秒過關！你也來試試吧！💧`
+                : `😢 今天的「節水記憶挑戰」失敗了，我要再挑戰一次！💧`;
+
+            startBtn.textContent = '傳送中...';
+            startBtn.disabled = true;
+
+            liff.sendMessages([{
+                type: 'text',
+                text: messageText
+            }]).then(() => {
+                liff.closeWindow(); 
+            }).catch((err) => {
+                console.error('傳送訊息失敗', err);
+                startBtn.textContent = '關閉視窗';
+                startBtn.disabled = false;
+                startBtn.onclick = () => liff.closeWindow();
+            });
         }
 
         function showMessage(msg) {
             const tempDiv = document.createElement('div');
             tempDiv.className = 'fixed top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50 text-sm w-11/12 text-center break-words';
-            tempDiv.textContent = msg; document.body.appendChild(tempDiv);
+            tempDiv.textContent = msg;
+            document.body.appendChild(tempDiv);
             setTimeout(() => tempDiv.remove(), 4000);
         }
 
         window.onload = initializeAppFlow;
+
     </script>
 </body>
 </html>
