@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>30秒節水記憶挑戰</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <script charset="utf-8" src="[https://static.line-scdn.net/liff/edge/2/sdk.js](https://static.line-scdn.net/liff/edge/2/sdk.js)"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     
     <style>
         /* 翻牌的 3D 透視與過渡動畫設定 */
@@ -30,7 +30,7 @@
             
             <div id="profile-container" class="absolute top-3 right-3 flex items-center gap-2 hidden bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
                 <span id="user-name" class="text-xs font-bold drop-shadow-md">載入中</span>
-                <img id="user-avatar" class="w-6 h-6 rounded-full border border-white object-cover" src="[https://via.placeholder.com/150](https://via.placeholder.com/150)" alt="avatar" />
+                <img id="user-avatar" class="w-6 h-6 rounded-full border border-white object-cover" src="https://via.placeholder.com/150" alt="avatar" />
             </div>
 
             <h1 class="text-2xl font-bold mb-2 mt-4 flex items-center justify-center gap-2">
@@ -64,19 +64,21 @@
     <script>
         // --- 變數設定 ---
         const LIFF_ID = "2009756203-gC2ejwHA"; 
-        const GAS_API_URL = "[https://script.google.com/macros/s/AKfycbyKj4yt8ERMzAsQATvSmQtYruS9v4RzBa8xTA5lqiu_KknEUAcc8Zhe41dK_tMJJecfjw/exec](https://script.google.com/macros/s/AKfycbyKj4yt8ERMzAsQATvSmQtYruS9v4RzBa8xTA5lqiu_KknEUAcc8Zhe41dK_tMJJecfjw/exec)"; 
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyKj4yt8ERMzAsQATvSmQtYruS9v4RzBa8xTA5lqiu_KknEUAcc8Zhe41dK_tMJJecfjw/exec"; 
 
         const GAME_TIME = 30;
         const MEMO_TIME = 10; 
         const TOTAL_PAIRS = 6; 
+        
+        // ✨ 在這裡替換了你的新題目，並優化了對應的圖示
         const waterTips = [
             { id: 1, icon: '🚰', text: '洗手水再利用' },
             { id: 2, icon: '🚿', text: '淋浴代替泡澡' },
-            { id: 3, icon: '🚽', text: '冷水回收利用' },
-            { id: 4, icon: '👕', text: '兩段式沖水' },
-            { id: 5, icon: '🌧️', text: '洗米水再利用' },
-            { id: 6, icon: '🪣', text: '衣服集中清洗' },
-            { id: 7, icon: '🌱', text: '安裝節水裝置' },
+            { id: 3, icon: '🪣', text: '冷水回收利用' }, // 換成水桶
+            { id: 4, icon: '🚽', text: '兩段式沖水' }, // 換成馬桶
+            { id: 5, icon: '🌱', text: '洗米水再利用' }, // 換成植物
+            { id: 6, icon: '👕', text: '衣服集中清洗' }, // 換成衣服
+            { id: 7, icon: '🛠️', text: '安裝節水裝置' }, // 換成工具
             { id: 8, icon: '🔍', text: '馬桶定期查漏' }
         ];
         
@@ -108,7 +110,6 @@
         async function recordPlayToday(lineUserId, profileName) {
             try {
                 const encodedName = encodeURIComponent(profileName);
-                // 使用 fetch 呼叫 GAS，背景執行即可
                 fetch(`${GAS_API_URL}?action=record&userId=${lineUserId}&displayName=${encodedName}`).catch(e => console.error(e));
             } catch (e) {
                 console.error("記錄遊玩次數失敗", e);
@@ -118,7 +119,6 @@
         // --- 初始化流程 ---
         async function initializeAppFlow() {
             try {
-                // 在電腦版預覽環境下
                 if (!window.navigator.userAgent.includes('Line')) {
                     loading.style.display = 'none';
                     overlayTitle.textContent = `嗨，訪客！`;
@@ -138,9 +138,8 @@
                 userProfile = await liff.getProfile();
                 profileContainer.classList.remove('hidden');
                 userNameElem.textContent = userProfile.displayName;
-                userAvatarElem.src = userProfile.pictureUrl || '[https://via.placeholder.com/150](https://via.placeholder.com/150)';
+                userAvatarElem.src = userProfile.pictureUrl || 'https://via.placeholder.com/150';
 
-                // 取消了每日阻擋機制，直接讓玩家進入準備畫面
                 loading.style.display = 'none';
                 overlayTitle.textContent = `嗨，${userProfile.displayName}！`;
                 overlayDesc.textContent = '準備好接受挑戰了嗎？找出所有節水小撇步！';
@@ -234,7 +233,6 @@
 
         // --- 遊戲流程控制 ---
         function startGame() {
-            // 背景記錄遊玩資料至 Google 試算表
             if(userProfile) {
                 recordPlayToday(userProfile.userId, userProfile.displayName);
             }
@@ -316,7 +314,6 @@
                 overlayTitle.textContent = '😢 時間到！';
                 overlayTitle.className = 'text-xl font-bold text-red-600 mb-2';
                 overlayDesc.textContent = `還差一點點！多試幾次一定能過關！`;
-                // 失敗時改為「重新挑戰」，讓玩家可以直接再玩一次，優化體驗
                 startBtn.textContent = '重新挑戰';
                 startBtn.onclick = startGame; 
             }
