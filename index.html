@@ -70,15 +70,15 @@
         const MEMO_TIME = 10; 
         const TOTAL_PAIRS = 6; 
         
-        // ✨ 在這裡替換了你的新題目，並優化了對應的圖示
+        // 節水題目
         const waterTips = [
             { id: 1, icon: '🚰', text: '洗手水再利用' },
             { id: 2, icon: '🚿', text: '淋浴代替泡澡' },
-            { id: 3, icon: '🪣', text: '冷水回收利用' }, // 換成水桶
-            { id: 4, icon: '🚽', text: '兩段式沖水' }, // 換成馬桶
-            { id: 5, icon: '🌱', text: '洗米水再利用' }, // 換成植物
-            { id: 6, icon: '👕', text: '衣服集中清洗' }, // 換成衣服
-            { id: 7, icon: '🛠️', text: '安裝節水裝置' }, // 換成工具
+            { id: 3, icon: '🪣', text: '冷水回收利用' },
+            { id: 4, icon: '🚽', text: '兩段式沖水' },
+            { id: 5, icon: '🌱', text: '洗米水再利用' },
+            { id: 6, icon: '👕', text: '衣服集中清洗' },
+            { id: 7, icon: '🛠️', text: '安裝節水裝置' },
             { id: 8, icon: '🔍', text: '馬桶定期查漏' }
         ];
         
@@ -308,7 +308,7 @@
                 overlayTitle.textContent = '🎉 挑戰成功！';
                 overlayTitle.className = 'text-xl font-bold text-green-600 mb-2';
                 overlayDesc.textContent = `太厲害了，你只花了 ${usedTime} 秒！`;
-                startBtn.textContent = '關閉並分享成績';
+                startBtn.textContent = '傳送成績並去抽獎';
                 startBtn.onclick = () => sendResultToChat(true, usedTime);
             } else {
                 overlayTitle.textContent = '😢 時間到！';
@@ -326,9 +326,10 @@
                 return;
             }
 
+            // 更新過關和失敗的文案
             const messageText = isWin 
-                ? `🎉 我在「節水記憶挑戰」花了 ${time} 秒過關！你也來試試吧！💧`
-                : `😢 今天的「節水記憶挑戰」失敗了，我要再挑戰一次！💧`;
+                ? `🎉 恭喜您花了 ${time} 秒過關！請點擊下方網址前往參加抽獎轉盤獲得好禮🎉\n➡️ https://metalive90-max.github.io/line-Turntable/`
+                : `😢 抱歉，今天的「節水記憶挑戰」失敗了！`;
 
             startBtn.textContent = '傳送中...';
             startBtn.disabled = true;
