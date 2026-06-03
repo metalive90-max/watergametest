@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>30秒節水記憶挑戰</title>
+    <!-- 引入 Tailwind CSS 快速排版 -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 LINE LIFF SDK -->
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     
     <style>
@@ -24,10 +26,13 @@
 </head>
 <body class="bg-gradient-to-br from-cyan-50 to-blue-200 min-h-screen flex flex-col items-center justify-center p-4">
 
+    <!-- 遊戲主畫面容器 -->
     <div class="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden relative border-2 border-cyan-100">
         
+        <!-- 標題與資訊列 -->
         <div class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-4 text-center relative">
             
+            <!-- 使用者資訊區塊 (預設隱藏，登入後顯示) -->
             <div id="profile-container" class="absolute top-3 right-3 flex items-center gap-2 hidden bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
                 <span id="user-name" class="text-xs font-bold drop-shadow-md">載入中</span>
                 <img id="user-avatar" class="w-6 h-6 rounded-full border border-white object-cover" src="https://via.placeholder.com/150" alt="avatar" />
@@ -42,9 +47,12 @@
             </div>
         </div>
 
+        <!-- 遊戲盤面 -->
         <div id="game-board" class="grid grid-cols-3 md:grid-cols-4 gap-2 p-4 bg-cyan-900/5 min-h-[350px]">
-            </div>
+            <!-- 卡片會由 JavaScript 動態生成 -->
+        </div>
 
+        <!-- 遊戲開始/覆蓋面版 -->
         <div id="overlay" class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-10">
             <div id="message-box" class="bg-white p-6 rounded-xl text-center max-w-[80%]">
                 <h2 id="overlay-title" class="text-xl font-bold text-cyan-800 mb-2">準備好了嗎？</h2>
@@ -56,6 +64,7 @@
         </div>
     </div>
 
+    <!-- 載入中遮罩 -->
     <div id="loading" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
         <p class="text-gray-500 font-bold mb-2">連接 LINE 帳號中...</p>
@@ -70,16 +79,15 @@
         const MEMO_TIME = 10; 
         const TOTAL_PAIRS = 6; 
         
-        // 節水題目
+        // --- 節水題目資料庫 ---
+        // 說明：此處定義遊戲中使用的固定 6 組卡牌，包含圖示與文字。
         const waterTips = [
             { id: 1, icon: '🚰', text: '洗手水再利用' },
             { id: 2, icon: '🚿', text: '淋浴代替泡澡' },
-            { id: 3, icon: '🔧', text: '檢查馬桶漏水' },
+            { id: 3, icon: '🔧', text: '檢查馬桶漏水' }, // 已更新為扳手圖案
             { id: 4, icon: '🚽', text: '兩段式沖水' },
-            { id: 5, icon: '🌱', text: '洗米水再利用' },
-            { id: 6, icon: '👕', text: '衣服集中清洗' },
-            { id: 7, icon: '🛠️', text: '安裝節水裝置' },
-            { id: 8, icon: '🔍', text: '馬桶定期查漏' }
+            { id: 5, icon: '🌾', text: '洗米水再利用' }, // 已更新為稻穗圖案
+            { id: 6, icon: '👕', text: '衣服集中清洗' }
         ];
         
         let cards = [];
@@ -91,7 +99,7 @@
         let isLockBoard = false;
         let userProfile = null; 
 
-        // --- DOM 元素 ---
+        // --- DOM 元素取得 ---
         const board = document.getElementById('game-board');
         const statusText = document.getElementById('status-text');
         const timeDisplay = document.getElementById('time-display');
@@ -106,7 +114,7 @@
         const userNameElem = document.getElementById('user-name');
         const userAvatarElem = document.getElementById('user-avatar');
 
-        // --- API 互動 (僅記錄，不阻擋) ---
+        // --- 寫入遊玩紀錄 (GAS API) ---
         async function recordPlayToday(lineUserId, profileName) {
             try {
                 const encodedName = encodeURIComponent(profileName);
@@ -116,7 +124,7 @@
             }
         }
 
-        // --- 初始化流程 ---
+        // --- 初始化 LINE LIFF 流程 ---
         async function initializeAppFlow() {
             try {
                 if (!window.navigator.userAgent.includes('Line')) {
@@ -156,13 +164,15 @@
             }
         }
 
-        // --- 遊戲核心邏輯 ---
+        // --- 建立卡牌版面與洗牌邏輯 ---
         function createBoard() {
             board.innerHTML = '';
-            const selectedTips = [...waterTips].sort(() => Math.random() - 0.5).slice(0, TOTAL_PAIRS);
+            
+            // 將定義好的 6 組題目取出，並複製一份產生對子，接著利用 Math.random() 打亂陣列順序
+            const selectedTips = waterTips;
             cards = [...selectedTips, ...selectedTips].sort(() => Math.random() - 0.5);
             
-            cards.forEach((tip, index) => {
+            cards.forEach((tip) => {
                 const card = document.createElement('div');
                 card.className = 'relative w-full aspect-square perspective cursor-pointer';
                 card.dataset.id = tip.id;
@@ -170,10 +180,12 @@
                 const inner = document.createElement('div');
                 inner.className = 'w-full h-full absolute transform-style-3d transition-transform duration-500 card-inner shadow-sm rounded-lg';
                 
+                // 卡牌背面（未翻開）的 HTML 結構
                 const back = document.createElement('div');
                 back.className = 'w-full h-full absolute backface-hidden bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center border-2 border-white/50 shadow-md';
                 back.innerHTML = '<span class="text-white text-3xl opacity-70 drop-shadow-md">💧</span>';
 
+                // 卡牌正面（翻開後）的 HTML 結構，帶入我們設定好的圖示與文字
                 const front = document.createElement('div');
                 front.className = 'w-full h-full absolute backface-hidden rotate-y-180 bg-white rounded-lg flex flex-col items-center justify-center shadow-inner border-2 border-cyan-200';
                 front.innerHTML = `
@@ -190,6 +202,7 @@
             });
         }
 
+        // --- 處理翻牌動作 ---
         function flipCard(card, inner) {
             if (!isPlaying || isLockBoard) return;
             if (flippedCards.includes(card) || card.classList.contains('matched')) return;
@@ -202,6 +215,7 @@
             }
         }
 
+        // --- 檢查兩張牌是否配對成功 ---
         function checkMatch() {
             isLockBoard = true;
             const [card1, card2] = flippedCards;
@@ -218,6 +232,7 @@
                     endGame(true);
                 }
             } else {
+                // 如果配對失敗，延遲 0.8 秒後將牌蓋回
                 setTimeout(() => {
                     card1.querySelector('.card-inner').classList.remove('rotate-y-180');
                     card2.querySelector('.card-inner').classList.remove('rotate-y-180');
@@ -231,7 +246,7 @@
             isLockBoard = false;
         }
 
-        // --- 遊戲流程控制 ---
+        // --- 開始遊戲前置作業 (記憶時間) ---
         function startGame() {
             if(userProfile) {
                 recordPlayToday(userProfile.userId, userProfile.displayName);
@@ -252,6 +267,7 @@
             timeDisplay.textContent = memoTime;
             timeDisplay.className = 'font-bold text-cyan-300';
 
+            // 稍微延遲後，自動翻開所有卡牌供玩家記憶
             const allInners = document.querySelectorAll('.card-inner');
             setTimeout(() => {
                 allInners.forEach(inner => inner.classList.add('rotate-y-180'));
@@ -264,12 +280,14 @@
                 
                 if (memoTime <= 0) {
                     clearInterval(timer);
+                    // 記憶時間結束，蓋回所有卡牌並開始實際遊戲
                     allInners.forEach(inner => inner.classList.remove('rotate-y-180'));
                     setTimeout(startActualGame, 500);
                 }
             }, 1000);
         }
 
+        // --- 進入實際倒數計時遊戲階段 ---
         function startActualGame() {
             isPlaying = true;
             isLockBoard = false;
@@ -283,6 +301,7 @@
                 timeLeft--;
                 timeDisplay.textContent = timeLeft;
                 
+                // 剩餘 10 秒時加入紅色脈衝動畫提醒
                 if (timeLeft <= 10) {
                     timeDisplay.classList.add('text-red-500', 'animate-pulse');
                 } else {
@@ -295,6 +314,7 @@
             }, 1000);
         }
 
+        // --- 遊戲結束處理 ---
         function endGame(isWin) {
             clearInterval(timer);
             isPlaying = false;
@@ -319,6 +339,7 @@
             }
         }
 
+        // --- 送出聊天室訊息 (LINE LIFF API) ---
         function sendResultToChat(isWin, time) {
             if (typeof liff === 'undefined' || !liff.isInClient()) {
                 showMessage("此為預覽模式，不會實際傳送訊息到 LINE。");
@@ -326,9 +347,8 @@
                 return;
             }
 
-            // 更新過關和失敗的文案
             const messageText = isWin 
-                ? `🎉 恭喜您花了 ${time} 秒過關！請點擊下方網址前往參加抽獎轉盤獲得好禮🎉\n➡️ https://liff.line.me/2010042972-TAJHISto`
+                ? `🎉 恭喜您花了 ${time} 秒過關！請點擊下方網址前往參加抽獎轉盤獲得好禮🎉\n➡️ https://metalive90-max.github.io/line-Turntable/`
                 : `😢 抱歉，今天的「節水記憶挑戰」失敗了！`;
 
             startBtn.textContent = '傳送中...';
@@ -347,6 +367,7 @@
             });
         }
 
+        // --- 畫面提示訊息建置 ---
         function showMessage(msg) {
             const tempDiv = document.createElement('div');
             tempDiv.className = 'fixed top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50 text-sm w-11/12 text-center break-words';
@@ -355,6 +376,7 @@
             setTimeout(() => tempDiv.remove(), 4000);
         }
 
+        // 啟動應用程式
         window.onload = initializeAppFlow;
 
     </script>
